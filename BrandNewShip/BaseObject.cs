@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace BrandNewShip
 {
-    abstract class BaseObject
+    abstract class BaseObject: ICollision
     {
         public Point Pos; //координаты начальные
         public Point Dir;   // направление движения       
@@ -27,6 +27,10 @@ namespace BrandNewShip
         {
             Pos.X = Pos.X + Dir.X;
             if (Pos.X < 0) Pos.X = Game.Width + Size.Width;            
-        }        
+        }
+
+        public Rectangle rect => new Rectangle(Pos, Size);
+
+        public bool Collision(ICollision o) => o.rect.IntersectsWith(this.rect);
     }
 }

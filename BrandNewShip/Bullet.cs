@@ -24,5 +24,7 @@ namespace BrandNewShip
             Pos.X = Pos.X + Dir.X;
             if (Pos.X == 1000) Pos = new Point(0, rnd.Next(Game.Height));      
         }
+
+
     }
 }

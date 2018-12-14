@@ -19,7 +19,8 @@ namespace BrandNewShip
         private static BaseObject[] _objs;
         private static Bullet _bullet;
         private static Asteroid[] _asteroids;
-        
+        private static Ship _ship = new Ship(new Point(10, 400), new Point(5, 5), new Size(10, 10));
+
         public static int Width
         {
             get { return width; }
@@ -38,12 +39,21 @@ namespace BrandNewShip
             g = form.CreateGraphics();            
             Width = form.ClientSize.Width;
             Height = form.ClientSize.Height;
-            if (Width > 984 || Height > 962 || Width < 132 || Height < 38) throw new ArgumentOutOfRangeException("Размер превышен");           
+            if (Width > 984 || Height > 962 || Width < 132 || Height < 38) throw new ArgumentOutOfRangeException("Размер превышен");
+            form.KeyDown += Form_KeyDown;
             Timer timer1 = new Timer { Interval = 100 };            
             timer1.Start();
             timer1.Tick += Timer_Tick;
-        }        
-               
+            
+        }      
+        
+        private static void Form_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.ControlKey) _bullet = new Bullet(new Point(_ship.rect.X + 10, _ship.rect.Y + 4), new Point(4, 0), new Size(4, 1));
+            if (e.KeyCode == Keys.Up) _ship.Up();
+            if (e.KeyCode == Keys.Down) _ship.Down();
+        }
+
         //рисуем форму и закрашиваем её черным
         public static void DrawForm()
         {
@@ -67,7 +77,7 @@ namespace BrandNewShip
             {
                 int r = rnd.Next(5, 50);
                 _asteroids[i] = new Asteroid(new Point(rnd.Next(Game.Width, 1000), rnd.Next(Game.Height, 1000)), new Point(-r / 5, r), new Size(r, r)); 
-            }
+            }            
         }
         
         //Рисуем астероиды, пули и звезды
@@ -78,37 +88,20 @@ namespace BrandNewShip
                 obj.Draw();
             foreach (Star obj in _objs)
                 obj.Draw();
-        }
+            _ship.Draw();
+        }   
 
-        //рисуем астероиды на форме
-        public static void AsteroidUpdate()
-        {
-            foreach (BaseObject obj in _asteroids)
-                obj.Update();
-        }        
-
-        //метод движения пули
-        public static void BulletUpdate()
-        {
-            _bullet.Update();
-        }
-
-        //метод движения звезд
-        public static void StarUpdate()
+        public static void Update()
         {
             foreach (Star obj in _objs)
                 obj.Update();
-        }
-
-        //Проверка столкновения пули и астероида, а также генерация нового астероида в случае столкновения
-        static public void BulletCollision()
-        {
-            foreach (Asteroid a in _asteroids)
+            foreach (BaseObject obj in _asteroids)
             {
-                Rectangle rect = new Rectangle(a.Pos.X, a.Pos.Y, a.Size.Height,a.Size.Width);
-                Rectangle bul = new Rectangle(_bullet.Pos.X, _bullet.Pos.Y, 4,1);
-                if (rect.IntersectsWith(bul)) a.Pos = a.Pos = new Point(rnd.Next(1000), rnd.Next(1000)); 
+                obj.Update();
+                if (obj.Collision(_bullet)) obj.Pos = new Point(rnd.Next(1000), rnd.Next(1000));
             }
+                
+            _bullet.Update();          
         }
 
         //таймер изменения состояний
@@ -117,10 +110,7 @@ namespace BrandNewShip
             
             DrawForm();
             Draw();
-            AsteroidUpdate();
-            BulletUpdate();
-            BulletCollision();
-            StarUpdate();    
+            Update();   
             buffer.Render();
             buffer.Dispose();
         }        
