@@ -9,8 +9,7 @@ namespace BrandNewShip
 {
     class Ship: BaseObject
     {
-        static private int _energy = 100;
-        //public int Energy { get; set; } = _energy;
+        static private int _energy = 100;        
         public int Energy => _energy;        
         
         public static event Message MessageDie;
@@ -18,6 +17,16 @@ namespace BrandNewShip
         public void EnergyLow(int n)
         {
             _energy -= n;
+        }
+
+        public void FullEnergy()
+        {
+            _energy -= _energy - 100;
+        }
+
+        public void EnergyUp(int n)
+        {
+            _energy += n;
         }
 
         public Ship(Point pos, Point dir, Size size) : base(pos, dir, size)

@@ -67,7 +67,7 @@ namespace BrandNewShip
         {
             _objs = new BaseObject[200];                   
             _asteroids = new Asteroid[150];
-            //_healthPack = new HealthPack[5];
+            _healthPack = new HealthPack[10];
             for (var i = 0; i < _objs.Length; i++)
             {
                 int r = rnd.Next(5, 50);
@@ -79,10 +79,10 @@ namespace BrandNewShip
                 int r = rnd.Next(5, 50);
                 _asteroids[i] = new Asteroid(new Point(rnd.Next(Game.Width, 1000), rnd.Next(Game.Height, 1000)), new Point(-r / 5, r), new Size(r, r)); 
             }
-            //for (var i = 0; i < _healthPack.Length; i++)
-            //{
-            //    _healthPack[i] = new HealthPack(new Point(rnd.Next(Game.Width, 1000), rnd.Next(Game.Width, 1000)), new Point(-3, 0), new Size(10, 10));
-            //}
+            for (var i = 0; i < _healthPack.Length; i++)
+            {
+                _healthPack[i] = new HealthPack(new Point(rnd.Next(Game.Width, 1000), rnd.Next(Game.Width, 1000)), new Point(-3, 0), new Size(10, 10));
+            }
         }
         public static void Draw()
         {
@@ -93,10 +93,10 @@ namespace BrandNewShip
             {
                 a?.Draw();
             }
-            //foreach (HealthPack hp in _healthPack)
-            //{
-            //    hp?.Draw();
-            //}
+            foreach (HealthPack hp in _healthPack)
+            {
+                hp?.Draw();
+            }
             _bullet?.Draw();
             _ship?.Draw();
             if (_ship != null)
@@ -125,14 +125,17 @@ namespace BrandNewShip
                 System.Media.SystemSounds.Asterisk.Play();
                 if (_ship.Energy <= 0) _ship?.Die();
             }
-            //for (var i = 0; i < _healthPack.Length; i++)
-            //{
-            //    _healthPack[i].Update();
-            //    if (_ship.Collision(_healthPack[i]))
-            //    {
-            //        while (_ship.Energy <= 100) _ship.Energy += rnd.Next(10, 20);
-            //    }
-            //}
+            for (var i = 0; i < _healthPack.Length; i++)
+            {
+                _healthPack[i].Update();                
+                if (_ship.Collision(_healthPack[i]))
+                {
+                    _healthPack[i].Pos.X = rnd.Next(Game.Width, 1000);
+                    _healthPack[i].Pos.Y = rnd.Next(Game.Height, 1000);
+                    _ship.EnergyUp(rnd.Next(20, 30));
+                    if (_ship.Energy > 100) _ship.FullEnergy();               
+                }
+            }
         }
 
         public static void Finish()
