@@ -13,6 +13,7 @@ namespace BrandNewShip
         public Point Pos; //координаты начальные
         public Point Dir;   // направление движения       
         public Size Size; //размер объекта
+        public delegate void Message();
 
         protected BaseObject(Point pos, Point dir, Size size)
         {

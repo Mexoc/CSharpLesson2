@@ -20,6 +20,8 @@ namespace BrandNewShip
         private static Bullet _bullet;
         private static Asteroid[] _asteroids;
         private static Ship _ship = new Ship(new Point(10, 400), new Point(5, 5), new Size(10, 10));
+        private static Timer _timer = new Timer { Interval = 100 };
+        private static HealthPack[] _healthPack;
 
         public static int Width
         {
@@ -40,16 +42,15 @@ namespace BrandNewShip
             Width = form.ClientSize.Width;
             Height = form.ClientSize.Height;
             if (Width > 984 || Height > 962 || Width < 132 || Height < 38) throw new ArgumentOutOfRangeException("Размер превышен");
-            form.KeyDown += Form_KeyDown;
-            Timer timer1 = new Timer { Interval = 100 };            
-            timer1.Start();
-            timer1.Tick += Timer_Tick;
-            
+            form.KeyDown += Form_KeyDown;                                   
+            _timer.Start();
+            _timer.Tick += Timer_Tick;
+            Ship.MessageDie += Finish;    
         }      
         
         private static void Form_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.ControlKey) _bullet = new Bullet(new Point(_ship.rect.X + 10, _ship.rect.Y + 4), new Point(4, 0), new Size(4, 1));
+            if (e.KeyCode == Keys.ControlKey) _bullet = new Bullet(new Point(_ship.rect.X + 10, _ship.rect.Y + 4), new Point(8, 0), new Size(4, 1));
             if (e.KeyCode == Keys.Up) _ship.Up();
             if (e.KeyCode == Keys.Down) _ship.Down();
         }
@@ -64,9 +65,9 @@ namespace BrandNewShip
         //загружаем астероиды, звезды и пулю
         public static void Load()
         {
-            _objs = new BaseObject[200];
-            _bullet = new Bullet(new Point(0, 200), new Point(10, 0), new Size(4, 1));            
-            _asteroids = new Asteroid[200];
+            _objs = new BaseObject[200];                   
+            _asteroids = new Asteroid[150];
+            //_healthPack = new HealthPack[5];
             for (var i = 0; i < _objs.Length; i++)
             {
                 int r = rnd.Next(5, 50);
@@ -77,37 +78,74 @@ namespace BrandNewShip
             {
                 int r = rnd.Next(5, 50);
                 _asteroids[i] = new Asteroid(new Point(rnd.Next(Game.Width, 1000), rnd.Next(Game.Height, 1000)), new Point(-r / 5, r), new Size(r, r)); 
-            }            
+            }
+            //for (var i = 0; i < _healthPack.Length; i++)
+            //{
+            //    _healthPack[i] = new HealthPack(new Point(rnd.Next(Game.Width, 1000), rnd.Next(Game.Width, 1000)), new Point(-3, 0), new Size(10, 10));
+            //}
         }
-        
-        //Рисуем астероиды, пули и звезды
         public static void Draw()
         {
-            _bullet.Draw();
-            foreach (Asteroid obj in _asteroids)
+            buffer.Graphics.Clear(Color.Black);
+            foreach (BaseObject obj in _objs)
                 obj.Draw();
-            foreach (Star obj in _objs)
-                obj.Draw();
-            _ship.Draw();
-        }   
+            foreach (Asteroid a in _asteroids)
+            {
+                a?.Draw();
+            }
+            //foreach (HealthPack hp in _healthPack)
+            //{
+            //    hp?.Draw();
+            //}
+            _bullet?.Draw();
+            _ship?.Draw();
+            if (_ship != null)
+                buffer.Graphics.DrawString("Здоровье:" + _ship.Energy, SystemFonts.DefaultFont, Brushes.White, 0, 0);
+            buffer.Render();
+        }
 
         public static void Update()
         {
-            foreach (Star obj in _objs)
-                obj.Update();
-            foreach (BaseObject obj in _asteroids)
+            foreach (BaseObject obj in _objs) obj.Update();
+            _bullet?.Update();
+            for (var i = 0; i < _asteroids.Length; i++)
             {
-                obj.Update();
-                if (obj.Collision(_bullet)) obj.Pos = new Point(rnd.Next(1000), rnd.Next(1000));
+                if (_asteroids[i] == null) continue;
+                _asteroids[i].Update();
+                if (_bullet != null && _bullet.Collision(_asteroids[i]))
+                {
+                    System.Media.SystemSounds.Hand.Play();
+                    _asteroids[i] = null;
+                    _bullet = null;
+                    continue;
+                }
+                if (!_ship.Collision(_asteroids[i])) continue;
+                var rnd = new Random();
+                _ship?.EnergyLow(rnd.Next(1, 10));
+                System.Media.SystemSounds.Asterisk.Play();
+                if (_ship.Energy <= 0) _ship?.Die();
             }
-                
-            _bullet.Update();          
+            //for (var i = 0; i < _healthPack.Length; i++)
+            //{
+            //    _healthPack[i].Update();
+            //    if (_ship.Collision(_healthPack[i]))
+            //    {
+            //        while (_ship.Energy <= 100) _ship.Energy += rnd.Next(10, 20);
+            //    }
+            //}
         }
+
+        public static void Finish()
+        {
+            _timer.Stop();
+            buffer.Graphics.DrawString("Game Over", new Font(FontFamily.GenericSansSerif, 60, FontStyle.Bold), Brushes.White, 200, 100);
+            buffer.Render();
+        }
+        
 
         //таймер изменения состояний
         public static void Timer_Tick(object sender, EventArgs e)
-        {
-            
+        {        
             DrawForm();
             Draw();
             Update();   

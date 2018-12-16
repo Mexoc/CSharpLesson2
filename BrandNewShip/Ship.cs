@@ -9,8 +9,11 @@ namespace BrandNewShip
 {
     class Ship: BaseObject
     {
-        private int _energy = 100;
-        public int Energy => _energy;
+        static private int _energy = 100;
+        //public int Energy { get; set; } = _energy;
+        public int Energy => _energy;        
+        
+        public static event Message MessageDie;
 
         public void EnergyLow(int n)
         {
@@ -23,7 +26,7 @@ namespace BrandNewShip
 
         public override void Draw()
         {
-            Game.buffer.Graphics.FillEllipse(Brushes.Wheat, Pos.X, Pos.Y, Size.Width, Size.Height);
+            Game.buffer.Graphics.FillEllipse(Brushes.Red, Pos.X, Pos.Y, Size.Width, Size.Height);
         }
 
         public override void Update()
@@ -42,6 +45,7 @@ namespace BrandNewShip
 
         public void Die()
         {
+            MessageDie?.Invoke();     
         }
     }
 }
