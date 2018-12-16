@@ -9,7 +9,9 @@ namespace BrandNewShip
 {
     class Ship: BaseObject
     {
-        static private int _energy = 100;        
+        static private int _energy = 100;
+        static private int _score = 0;
+        public int Score => _score; 
         public int Energy => _energy;        
         
         public static event Message MessageDie;
@@ -17,6 +19,11 @@ namespace BrandNewShip
         public void EnergyLow(int n)
         {
             _energy -= n;
+        }
+
+        public void IncScore(int n)
+        {
+            _score += n;
         }
 
         public void FullEnergy()

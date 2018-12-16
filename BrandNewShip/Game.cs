@@ -101,6 +101,7 @@ namespace BrandNewShip
             _ship?.Draw();
             if (_ship != null)
                 buffer.Graphics.DrawString("Здоровье:" + _ship.Energy, SystemFonts.DefaultFont, Brushes.White, 0, 0);
+                buffer.Graphics.DrawString("Очки за астероиды:" + _ship.Score, SystemFonts.DefaultFont, Brushes.White, 0, 12);
             buffer.Render();
         }
 
@@ -115,6 +116,7 @@ namespace BrandNewShip
                 if (_bullet != null && _bullet.Collision(_asteroids[i]))
                 {
                     System.Media.SystemSounds.Hand.Play();
+                    _ship.IncScore(5);
                     _asteroids[i] = null;
                     _bullet = null;
                     continue;
@@ -130,8 +132,7 @@ namespace BrandNewShip
                 _healthPack[i].Update();                
                 if (_ship.Collision(_healthPack[i]))
                 {
-                    _healthPack[i].Pos.X = rnd.Next(Game.Width, 1000);
-                    _healthPack[i].Pos.Y = rnd.Next(Game.Height, 1000);
+                    _healthPack[i].Pos = new Point((rnd.Next(Game.Width, 1000)), rnd.Next(Game.Width, 1000));
                     _ship.EnergyUp(rnd.Next(20, 30));
                     if (_ship.Energy > 100) _ship.FullEnergy();               
                 }
